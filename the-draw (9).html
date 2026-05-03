@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Draw</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400;1,500&family=Jost:wght@200;300;400&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@1,400;1,500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Jost',sans-serif;min-height:100vh;display:flex;justify-content:center;padding:0 0 80px;transition:background .4s}
+#wrap{width:100%;max-width:420px}
+
+/* ── HEADER ── */
+.header{text-align:center;padding:32px 20px 22px;transition:background .4s,border-color .4s;border-bottom:1px solid transparent}
+.logo{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;font-style:italic;letter-spacing:6px;line-height:1;margin-bottom:6px;transition:color .4s}
+.tagline{font-family:'Jost',sans-serif;font-size:10px;font-weight:200;letter-spacing:.38em;text-transform:uppercase;margin-bottom:14px;transition:color .4s}
+.ornament{display:flex;align-items:center;justify-content:center;gap:10px}
+.ornament-line{width:40px;height:1px;transition:background .4s}
+.ornament-diamond{width:5px;height:5px;transform:rotate(45deg);transition:background .4s}
+
+/* ── TABS ── */
+.tabs{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 20px;transition:background .4s,border-color .4s;border-bottom:1px solid transparent}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:64px;padding:10px 6px 12px;font-family:'Jost',sans-serif;font-size:10px;font-weight:300;letter-spacing:.16em;text-transform:uppercase;border:none;background:transparent;cursor:pointer;position:relative;white-space:nowrap;transition:color .2s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.tab-icon{font-size:14px;display:block}
+.tab.active::after{content:'';position:absolute;bottom:-1px;left:10px;right:10px;height:1.5px;transition:background .4s}
+
+/* ── PANELS ── */
+.panel{display:none;padding:26px 20px 0}
+.panel.active{display:block}
+
+/* ── SECTION LABEL ── */
+.slabel{font-family:'Jost',sans-serif;font-size:9px;font-weight:300;letter-spacing:.35em;text-transform:uppercase;margin-bottom:10px;transition:color .3s}
+
+/* ── QUICK ROW ── */
+.quick-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.4rem}
+.q-btn{font-family:'Jost',sans-serif;font-size:11px;font-weight:300;letter-spacing:.06em;padding:5px 12px;border-radius:2px;cursor:pointer;border:1px solid;transition:background .15s,opacity .15s}
+.q-btn:hover{opacity:.75}
+
+/* ── ITEM LIST ── */
+.item-list{display:flex;flex-direction:column;gap:1px;margin-bottom:12px;min-height:20px}
+.i-chip{display:flex;align-items:flex-start;justify-content:space-between;padding:11px 10px 11px 14px;transition:border-color .15s,opacity .15s;gap:10px;cursor:pointer}
+.i-chip:hover{opacity:.82}
+.i-chip-info{flex:1;min-width:0}
+.i-chip-name{font-family:'Cormorant Garamond',serif;font-size:15px;letter-spacing:.04em;line-height:1.2}
+.i-chip-meta{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:4px}
+.i-chip-tag{font-family:'Jost',sans-serif;font-size:10px;font-weight:200;letter-spacing:.06em;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.i-chip-tag.ig{color:inherit}
+.i-chip-note{font-family:'Jost',sans-serif;font-size:10px;font-weight:200;letter-spacing:.04em;opacity:.45;margin-top:3px;font-style:italic;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.i-chip-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.i-chip-remove{background:none;border:none;cursor:pointer;font-family:'Jost',sans-serif;font-size:10px;font-weight:200;letter-spacing:.12em;color:inherit;text-transform:uppercase;opacity:.35;transition:opacity .1s;padding:0 3px}
+.i-chip-remove:hover{opacity:1}
+.empty-msg{font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;text-align:center;padding:12px 0;opacity:.5}
+
+/* ── DETAIL SHEET ── */
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:75;display:none;align-items:flex-end;justify-content:center}
+.detail-overlay.show{display:flex}
+.detail-sheet{width:100%;max-width:420px;padding:28px 20px 36px;max-height:88vh;overflow-y:auto;transition:background .3s}
+.detail-sheet-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:12px}
+.detail-cat-label{font-family:'Jost',sans-serif;font-size:9px;font-weight:300;letter-spacing:.3em;text-transform:uppercase;margin-bottom:4px}
+.detail-name{font-family:'Cormorant Garamond',serif;font-size:28px;font-style:italic;letter-spacing:.03em;line-height:1.2;word-break:break-word}
+.detail-close{background:none;border:none;font-size:18px;cursor:pointer;opacity:.4;transition:opacity .15s;padding:2px 4px;line-height:1;flex-shrink:0;margin-top:2px}
+.detail-close:hover{opacity:1}
+.detail-rule{width:36px;height:1px;margin:14px 0}
+.detail-rows{display:flex;flex-direction:column;gap:10px}
+.detail-row{display:flex;align-items:flex-start;gap:10px}
+.detail-icon{font-size:13px;flex-shrink:0;margin-top:1px;width:18px;text-align:center;opacity:.65}
+.detail-text{font-family:'Jost',sans-serif;font-size:12px;font-weight:300;letter-spacing:.04em;line-height:1.6;opacity:.8}
+.detail-text a{color:inherit;text-decoration:none;border-bottom:1px solid rgba(128,128,128,.3)}
+.detail-text a:hover{opacity:1}
+.detail-empty{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;opacity:.4;margin-top:4px}
+.detail-actions{display:flex;gap:8px;margin-top:22px}
+.detail-edit-btn{flex:1;padding:12px;font-family:'Jost',sans-serif;font-size:10px;font-weight:300;letter-spacing:.25em;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;transition:opacity .15s}
+.detail-edit-btn:hover{opacity:.88}
+.detail-delete-btn{padding:12px 18px;font-family:'Jost',sans-serif;font-size:10px;font-weight:300;letter-spacing:.22em;text-transform:uppercase;background:transparent;border:1px solid;border-radius:2px;cursor:pointer;transition:all .15s}
+
+/* detail sheet themes */
+.detail-food{background:#0E0A1A;border-top:2px solid #FF6B4A}
+.detail-food .detail-cat-label{color:#6B5F80}
+.detail-food .detail-name{color:#FF6B4A}
+.detail-food .detail-close{color:#A899C0}
+.detail-food .detail-rule{background:rgba(255,107,74,.25)}
+.detail-food .detail-text{color:#F0EAF8}
+.detail-food .detail-edit-btn{background:#FF6B4A;color:#0E0A1A}
+.detail-food .detail-delete-btn{color:#6B5F80;border-color:rgba(255,107,74,.2)}
+.detail-food .detail-delete-btn:hover{color:#F0EAF8;border-color:rgba(255,107,74,.4)}
+
+.detail-supper{background:#16120D;border-top:2px solid #B8922A}
+.detail-supper .detail-cat-label{color:#5C4F38}
+.detail-supper .detail-name{color:#D4A84B}
+.detail-supper .detail-close{color:#8C7D60}
+.detail-supper .detail-rule{background:rgba(184,146,42,.25)}
+.detail-supper .detail-text{color:#E8DEC8}
+.detail-supper .detail-edit-btn{background:#B8922A;color:#16120D}
+.detail-supper .detail-delete-btn{color:#5C4F38;border-color:rgba(184,146,42,.2)}
+.detail-supper .detail-delete-btn:hover{color:#C9BC9F;border-color:rgba(184,146,42,.4)}
+
+.detail-drinks{background:#16120D;border-top:2px solid #C4622D}
+.detail-drinks .detail-cat-label{color:#5C4F38}
+.detail-drinks .detail-name{color:#C4622D}
+.detail-drinks .detail-close{color:#8C7D60}
+.detail-drinks .detail-rule{background:rgba(196,98,45,.25)}
+.detail-drinks .detail-text{color:#E8DEC8}
+.detail-drinks .detail-edit-btn{background:#C4622D;color:#fff}
+.detail-drinks .detail-delete-btn{color:#5C4F38;border-color:rgba(196,98,45,.2)}
+.detail-drinks .detail-delete-btn:hover{color:#C9BC9F;border-color:rgba(196,98,45,.4)}
+
+.detail-coffee{background:#F7F4EF;border-top:2px solid #2C2218}
+.detail-coffee .detail-cat-label{color:#B8AFA4}
+.detail-coffee .detail-name{color:#2C2218}
+.detail-coffee .detail-close{color:#9E9385}
+.detail-coffee .detail-rule{background:rgba(0,0,0,.1)}
+.detail-coffee .detail-text{color:#2C2218}
+.detail-coffee .detail-edit-btn{background:#2C2218;color:#F7F4EF}
+.detail-coffee .detail-delete-btn{color:#9E9385;border-color:rgba(0,0,0,.12)}
+.detail-coffee .detail-delete-btn:hover{color:#2C2218;border-color:rgba(0,0,0,.3)}
+
+.detail-activities{background:#FDF6EE;border-top:2px solid #C07840}
+.detail-activities .detail-cat-label{color:#CBA98C}
+.detail-activities .detail-name{color:#C07840}
+.detail-activities .detail-close{color:#B8957A}
+.detail-activities .detail-rule{background:rgba(192,120,64,.2)}
+.detail-activities .detail-text{color:#4A2E18}
+.detail-activities .detail-edit-btn{background:#C07840;color:#fff}
+.detail-activities .detail-delete-btn{color:#CBA98C;border-color:rgba(192,120,64,.2)}
+.detail-activities .detail-delete-btn:hover{color:#8B5E3C;border-color:rgba(192,120,64,.4)}
+
+.detail-brunch{background:#FFFBEC;border-top:2px solid #C9A800}
+.detail-brunch .detail-cat-label{color:#A8893A}
+.detail-brunch .detail-name{color:#A87800}
+.detail-brunch .detail-close{color:#C4AB5A}
+.detail-brunch .detail-rule{background:rgba(201,168,0,.22)}
+.detail-brunch .detail-text{color:#3A2E00}
+.detail-brunch .detail-edit-btn{background:#C9A800;color:#fff}
+.detail-brunch .detail-delete-btn{color:#A8893A;border-color:rgba(201,168,0,.2)}
+.detail-brunch .detail-delete-btn:hover{color:#3A2E00;border-color:rgba(201,168,0,.45)}
+
+/* ── ADD ROW ── */
+.add-row{display:flex;gap:8px;margin-bottom:1.4rem}
+.add-row input{flex:1;font-family:'Cormorant Garamond',serif;font-size:15px;padding:10px 14px;border:none;border-bottom:1px solid;outline:none;transition:border-color .2s;letter-spacing:.04em}
+.add-row input::placeholder{font-style:italic}
+.add-btn{padding:10px 18px;font-family:'Jost',sans-serif;font-size:10px;font-weight:300;letter-spacing:.22em;text-transform:uppercase;background:transparent;border:1px solid;border-radius:2px;cursor:pointer;white-space:nowrap;transition:background .15s}
+
+/* ── SPIN BUTTON ── */
+.spin-btn{width:100%;padding:15px;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;font-style:italic;letter-spacing:1.5px;border:none;border-radius:2px;cursor:pointer;transition:opacity .15s,transform .1s}
+.spin-btn:hover{opacity:.88}
+.spin-btn:active{transform:scale(.99)}
+.spin-btn:disabled{cursor:not-allowed;opacity:.3;transform:none}
+
+/* ── RESULT ── */
+.result-wrap{margin-top:1.4rem;padding:1.4rem;display:none;text-align:center;transition:background .3s,border-color .3s}
+.result-wrap.show{display:block}
+.result-eyebrow{font-family:'Jost',sans-serif;font-size:9px;font-weight:200;letter-spacing:.38em;text-transform:uppercase;margin-bottom:10px;transition:color .3s}
+.ticker{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;min-height:24px;margin-bottom:2px;transition:color .3s}
+.result-name{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;font-style:italic;letter-spacing:1px;line-height:1.2;word-break:break-word;transition:color .3s}
+.result-rule{width:36px;height:1px;margin:10px auto 8px;transition:background .3s}
+.result-details{display:flex;flex-direction:column;gap:5px;text-align:left;margin-top:4px}
+.result-detail{display:flex;align-items:flex-start;gap:8px}
+.result-detail-icon{font-size:12px;flex-shrink:0;margin-top:1px;width:16px;text-align:center;opacity:.7}
+.result-detail-text{font-family:'Jost',sans-serif;font-size:11px;font-weight:300;letter-spacing:.04em;line-height:1.5;opacity:.75}
+.result-detail-text a{color:inherit;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.2)}
+.result-detail-text a:hover{opacity:1}
+
+/* ── FLORAL DECO ── */
+.floral-deco{display:none;justify-content:center;gap:6px;margin-bottom:1rem;font-size:18px;opacity:.55}
+
+/* ── SYNC STATUS BAR ── */
+.sync-status{position:fixed;top:0;left:50%;transform:translateX(-50%);max-width:420px;width:100%;font-family:'Jost',sans-serif;font-size:10px;font-weight:300;letter-spacing:.18em;text-transform:uppercase;text-align:center;padding:6px 20px;z-index:200;transition:opacity .3s;pointer-events:none}
+.sync-status:empty{opacity:0}
+.sync-status.loading{background:rgba(184,146,42,.15);color:#B8922A}
+.sync-status.ok{background:rgba(45,160,100,.12);color:#2A8A5A}
+.sync-status.warn{background:rgba(196,98,45,.12);color:#C4622D}
+
+/* ── NAME PROMPT ── */
+.name-bar{display:flex;align-items:center;gap:8px;padding:10px 20px;border-bottom:1px solid transparent;transition:border-color .4s}
+.name-bar input{flex:1;font-family:'Jost',sans-serif;font-size:12px;font-weight:300;letter-spacing:.06em;padding:6px 10px;border:1px solid;border-radius:2px;outline:none;background:transparent;transition:border-color .2s}
+.name-bar-label{font-family:'Jost',sans-serif;font-size:9px;font-weight:300;letter-spacing:.28em;text-transform:uppercase;flex-shrink:0}
+.name-bar-toggle{background:none;border:none;cursor:pointer;font-family:'Jost',sans-serif;font-size:9px;font-weight:300;letter-spacing:.18em;text-transform:uppercase;opacity:.5;transition:opacity .15s;flex-shrink:0;padding:0}
+.name-bar-toggle:hover{opacity:1}
+
+/* ── ENTRY MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:80;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{width:100%;max-width:420px;padding:24px 20px 36px;max-height:88vh;overflow-y:auto;transition:background .3s,border-color .3s}
+.modal-heading{font-family:'Jost',sans-serif;font-size:9px;font-weight:300;letter-spacing:.3em;text-transform:uppercase;margin-bottom:4px}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-style:italic;margin-bottom:6px;letter-spacing:.03em;word-break:break-word}
+.modal-subtitle{font-family:'Jost',sans-serif;font-size:10px;font-weight:200;letter-spacing:.14em;margin-bottom:22px;font-style:italic}
+.field{margin-bottom:16px}
+.field label{display:block;font-family:'Jost',sans-serif;font-size:9px;font-weight:300;letter-spacing:.3em;text-transform:uppercase;margin-bottom:7px}
+.field input,.field textarea{width:100%;font-family:'Jost',sans-serif;font-size:13px;font-weight:300;padding:10px 12px;border-radius:2px;outline:none;transition:border-color .2s,background .3s;letter-spacing:.03em;border:1px solid}
+.field textarea{resize:vertical;min-height:72px;line-height:1.6}
+.field input::placeholder,.field textarea::placeholder{font-style:italic}
+.modal-actions{display:flex;gap:8px;margin-top:4px}
+.modal-save{flex:1;padding:13px;font-family:'Jost',sans-serif;font-size:10px;font-weight:300;letter-spacing:.25em;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;transition:opacity .15s}
+.modal-save:hover{opacity:.88}
+.modal-skip{padding:13px 18px;font-family:'Jost',sans-serif;font-size:10px;font-weight:300;letter-spacing:.22em;text-transform:uppercase;background:transparent;border:1px solid;border-radius:2px;cursor:pointer;transition:all .15s}
+
+/* modal — whim */
+.modal-food{background:#0E0A1A;border-top:2px solid #FF6B4A}
+.modal-food .modal-heading{color:#6B5F80}
+.modal-food .modal-title{color:#FF6B4A}
+.modal-food .modal-subtitle{color:#6B5F80}
+.modal-food .field label{color:#6B5F80}
+.modal-food .field input,.modal-food .field textarea{background:#1A1330;color:#F0EAF8;border-color:rgba(255,107,74,.2)}
+.modal-food .field input:focus,.modal-food .field textarea:focus{border-color:#FF6B4A}
+.modal-food .field input::placeholder,.modal-food .field textarea::placeholder{color:#6B5F80}
+.modal-food .modal-save{background:#FF6B4A;color:#0E0A1A}
+.modal-food .modal-skip{color:#6B5F80;border-color:rgba(255,107,74,.2)}
+.modal-food .modal-skip:hover{color:#A899C0;border-color:rgba(255,107,74,.4)}
+
+/* modal — the table */
+.modal-supper{background:#16120D;border-top:2px solid #B8922A}
+.modal-supper .modal-heading{color:#5C4F38}
+.modal-supper .modal-title{color:#D4A84B}
+.modal-supper .modal-subtitle{color:#5C4F38}
+.modal-supper .field label{color:#5C4F38}
+.modal-supper .field input,.modal-supper .field textarea{background:#1E1810;color:#E8DEC8;border-color:rgba(184,146,42,.18)}
+.modal-supper .field input:focus,.modal-supper .field textarea:focus{border-color:#B8922A}
+.modal-supper .field input::placeholder,.modal-supper .field textarea::placeholder{color:#5C4F38}
+.modal-supper .modal-save{background:#B8922A;color:#16120D}
+.modal-supper .modal-skip{color:#5C4F38;border-color:rgba(184,146,42,.2)}
+.modal-supper .modal-skip:hover{color:#C9BC9F;border-color:rgba(184,146,42,.4)}
+
+/* modal — parlour drinks */
+.modal-drinks{background:#16120D;border-top:2px solid #C4622D}
+.modal-drinks .modal-heading{color:#5C4F38}
+.modal-drinks .modal-title{color:#C4622D}
+.modal-drinks .modal-subtitle{color:#5C4F38}
+.modal-drinks .field label{color:#5C4F38}
+.modal-drinks .field input,.modal-drinks .field textarea{background:#1E1810;color:#E8DEC8;border-color:rgba(196,98,45,.18)}
+.modal-drinks .field input:focus,.modal-drinks .field textarea:focus{border-color:#C4622D}
+.modal-drinks .field input::placeholder,.modal-drinks .field textarea::placeholder{color:#5C4F38}
+.modal-drinks .modal-save{background:#C4622D;color:#fff}
+.modal-drinks .modal-skip{color:#5C4F38;border-color:rgba(196,98,45,.2)}
+.modal-drinks .modal-skip:hover{color:#C9BC9F;border-color:rgba(196,98,45,.4)}
+
+/* modal — coffee */
+.modal-coffee{background:#F7F4EF;border-top:2px solid #2C2218}
+.modal-coffee .modal-heading{color:#B8AFA4}
+.modal-coffee .modal-title{color:#2C2218}
+.modal-coffee .modal-subtitle{color:#B8AFA4}
+.modal-coffee .field label{color:#B8AFA4}
+.modal-coffee .field input,.modal-coffee .field textarea{background:#fff;color:#2C2218;border-color:rgba(0,0,0,.12)}
+.modal-coffee .field input:focus,.modal-coffee .field textarea:focus{border-color:#2C2218}
+.modal-coffee .field input::placeholder,.modal-coffee .field textarea::placeholder{color:#C0B8B0}
+.modal-coffee .modal-save{background:#2C2218;color:#F7F4EF}
+.modal-coffee .modal-skip{color:#9E9385;border-color:rgba(0,0,0,.12)}
+.modal-coffee .modal-skip:hover{color:#2C2218;border-color:rgba(0,0,0,.25)}
+
+/* modal — soleil */
+.modal-activities{background:#FDF6EE;border-top:2px solid #C07840}
+.modal-activities .modal-heading{color:#CBA98C}
+.modal-activities .modal-title{color:#C07840}
+.modal-activities .modal-subtitle{color:#CBA98C}
+.modal-activities .field label{color:#CBA98C}
+.modal-activities .field input,.modal-activities .field textarea{background:#fff;color:#4A2E18;border-color:rgba(192,120,64,.2)}
+.modal-activities .field input:focus,.modal-activities .field textarea:focus{border-color:#C07840}
+.modal-activities .field input::placeholder,.modal-activities .field textarea::placeholder{color:#CBA98C}
+.modal-activities .modal-save{background:#C07840;color:#fff}
+.modal-activities .modal-skip{color:#CBA98C;border-color:rgba(192,120,64,.2)}
+.modal-activities .modal-skip:hover{color:#8B5E3C;border-color:rgba(192,120,64,.4)}
+
+/* modal — brunch */
+.modal-brunch{background:#FFFBEC;border-top:2px solid #C9A800}
+.modal-brunch .modal-heading{color:#A8893A}
+.modal-brunch .modal-title{color:#A87800}
+.modal-brunch .modal-subtitle{color:#A8893A}
+.modal-brunch .field label{color:#A8893A}
+.modal-brunch .field input,.modal-brunch .field textarea{background:#FFF8D6;color:#3A2E00;border-color:rgba(201,168,0,.22);border-radius:4px}
+.modal-brunch .field input:focus,.modal-brunch .field textarea:focus{border-color:#C9A800}
+.modal-brunch .field input::placeholder,.modal-brunch .field textarea::placeholder{color:#C4AB5A}
+.modal-brunch .modal-save{background:#C9A800;color:#fff}
+.modal-brunch .modal-skip{color:#A8893A;border-color:rgba(201,168,0,.25)}
+.modal-brunch .modal-skip:hover{color:#3A2E00;border-color:rgba(201,168,0,.5)}
+
+/* ── FLOATING ALL PLACES BTN ── */
+.fab{position:fixed;bottom:24px;right:24px;z-index:50;background:#1A1330;border:1px solid rgba(184,146,42,.4);border-radius:2px;padding:10px 16px;font-family:'Jost',sans-serif;font-size:10px;font-weight:300;letter-spacing:.22em;text-transform:uppercase;color:#D4A84B;cursor:pointer;box-shadow:0 4px 24px rgba(0,0,0,.5);transition:background .15s,transform .15s}
+.fab:hover{background:#2A2010;transform:translateY(-1px)}
+.fab.active{background:#B8922A;color:#16120D;border-color:#B8922A}
+
+/* ── ALL PLACES DRAWER ── */
+.drawer{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;pointer-events:none;transition:opacity .3s}
+.drawer.show{pointer-events:all}
+.drawer-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6);opacity:0;transition:opacity .3s}
+.drawer.show .drawer-backdrop{opacity:1}
+.drawer-panel{position:absolute;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:420px;background:#16120D;border-top:2px solid #B8922A;max-height:90vh;display:flex;flex-direction:column;transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.drawer.show .drawer-panel{transform:translateX(-50%) translateY(0)}
+.drawer-header{padding:20px 20px 14px;border-bottom:1px solid rgba(184,146,42,.15);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.drawer-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:#D4A84B}
+.drawer-sub{font-family:'Jost',sans-serif;font-size:9px;font-weight:200;letter-spacing:.28em;text-transform:uppercase;color:#5C4F38;margin-top:3px}
+.drawer-close{background:none;border:none;color:#5C4F38;font-size:18px;cursor:pointer;padding:4px;transition:color .15s;line-height:1}
+.drawer-close:hover{color:#D4A84B}
+.drawer-filters{display:flex;gap:6px;padding:12px 20px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid rgba(184,146,42,.1);flex-shrink:0}
+.drawer-filters::-webkit-scrollbar{display:none}
+.filter-btn{font-family:'Jost',sans-serif;font-size:10px;font-weight:300;letter-spacing:.14em;text-transform:uppercase;padding:5px 12px;border:1px solid rgba(184,146,42,.2);border-radius:2px;background:transparent;color:#5C4F38;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.filter-btn:hover,.filter-btn.active{background:#2A2010;color:#D4A84B;border-color:rgba(184,146,42,.4)}
+.drawer-list{overflow-y:auto;padding:0 20px;flex:1}
+.drawer-place-row{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid rgba(184,146,42,.07)}
+.dp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.dp-info{flex:1;min-width:0}
+.dp-name{font-family:'Cormorant Garamond',serif;font-size:16px;color:#E8DEC8;letter-spacing:.03em}
+.dp-cat{font-family:'Jost',sans-serif;font-size:9px;font-weight:200;letter-spacing:.18em;text-transform:uppercase;margin-top:2px}
+.dp-meta{font-family:'Jost',sans-serif;font-size:11px;font-weight:300;color:#5C4F38;margin-top:3px}
+.dp-maps{font-family:'Jost',sans-serif;font-size:10px;font-weight:300;letter-spacing:.1em;color:#B8922A;text-decoration:none;flex-shrink:0;padding-top:4px;transition:color .15s}
+.dp-maps:hover{color:#D4A84B}
+.drawer-empty{font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:#5C4F38;text-align:center;padding:40px 0}
+.dot-food{background:#FF6B4A}.dot-supper{background:#D4A84B}.dot-drinks{background:#C4622D}.dot-coffee{background:#9E9385}.dot-activities{background:#C07840}.dot-brunch{background:#C9A800}
+.cat-food{color:#FF6B4A}.cat-supper{color:#D4A84B}.cat-drinks{color:#C4622D}.cat-coffee{color:#9E9385}.cat-activities{color:#C07840}.cat-brunch{color:#C9A800}
+
+/* ════ WHIM theme ════ */
+body.theme-food{background:#0E0A1A;color:#F0EAF8}
+.theme-food .header{background:#0E0A1A;border-color:rgba(155,109,255,.15)}
+.theme-food .logo{color:#FF6B4A}
+.theme-food .tagline{color:#A899C0}
+.theme-food .ornament-line{background:rgba(155,109,255,.3)}
+.theme-food .ornament-diamond{background:#9B6DFF}
+.theme-food .tabs{background:#1A1330;border-color:rgba(155,109,255,.15)}
+.theme-food .tab{color:#6B5F80}
+.theme-food .tab:hover{color:#A899C0}
+.theme-food .tab.active{color:#FF6B4A}
+.theme-food .tab.active::after{background:#FF6B4A}
+.theme-food .slabel{color:#6B5F80}
+.theme-food .q-btn{background:rgba(58,31,22,.6);border-color:rgba(255,107,74,.4);color:#FF6B4A;border-radius:20px;font-family:'DM Sans',sans-serif;font-weight:400}
+.theme-food .i-chip{background:#1A1330;border:1px solid rgba(255,107,74,.2);border-radius:20px}
+.theme-food .i-chip-name{color:#FFC4B4}
+.theme-food .i-chip-remove{color:#6B5F80}
+.theme-food .empty-msg{color:#6B5F80}
+.theme-food .add-row input{background:#1A1330;color:#F0EAF8;border-color:rgba(255,107,74,.25);font-family:'DM Sans',sans-serif;font-weight:300}
+.theme-food .add-row input::placeholder{color:#6B5F80}
+.theme-food .add-row input:focus{border-color:#FF6B4A}
+.theme-food .add-btn{color:#FF6B4A;border-color:rgba(255,107,74,.4)}
+.theme-food .add-btn:hover{background:rgba(58,31,22,.6)}
+.theme-food .spin-btn{background:#FF6B4A;color:#0E0A1A;border-radius:14px}
+.theme-food .result-wrap{background:rgba(58,31,22,.5);border:1px dashed rgba(255,107,74,.35);border-radius:14px}
+.theme-food .result-eyebrow{color:#6B5F80}
+.theme-food .ticker{color:#A899C0}
+.theme-food .result-name{color:#FF6B4A}
+.theme-food .result-rule{background:rgba(255,107,74,.3)}
+.theme-food .name-bar{border-color:rgba(155,109,255,.12)}
+.theme-food .name-bar-label{color:#6B5F80}
+.theme-food .name-bar input{color:#F0EAF8;border-color:rgba(155,109,255,.2)}
+.theme-food .name-bar input::placeholder{color:#6B5F80}
+.theme-food .name-bar input:focus{border-color:#9B6DFF}
+.theme-food .name-bar-toggle{color:#A899C0}
+
+/* ════ THE TABLE theme ════ */
+body.theme-supper{background:#16120D;color:#E8DEC8}
+.theme-supper .header{background:#16120D;border-color:rgba(184,146,42,.18)}
+.theme-supper .logo{color:#D4A84B}
+.theme-supper .tagline{color:#8C7D60}
+.theme-supper .ornament-line{background:rgba(184,146,42,.3)}
+.theme-supper .ornament-diamond{background:#B8922A}
+.theme-supper .tabs{background:#16120D;border-color:rgba(184,146,42,.15)}
+.theme-supper .tab{color:#5C4F38}
+.theme-supper .tab:hover{color:#8C7D60}
+.theme-supper .tab.active{color:#D4A84B}
+.theme-supper .tab.active::after{background:#B8922A}
+.theme-supper .slabel{color:#5C4F38}
+.theme-supper .q-btn{background:transparent;border-color:rgba(184,146,42,.25);color:#C9BC9F}
+.theme-supper .q-btn:hover{background:#1E1810}
+.theme-supper .i-chip{background:#1E1810;border-left:2px solid #2A2010}
+.theme-supper .i-chip:hover{border-left-color:#B8922A}
+.theme-supper .i-chip-name{color:#E8DEC8}
+.theme-supper .i-chip-remove{color:#5C4F38}
+.theme-supper .empty-msg{color:#5C4F38}
+.theme-supper .add-row input{background:#1E1810;color:#E8DEC8;border-color:rgba(184,146,42,.2)}
+.theme-supper .add-row input::placeholder{color:#5C4F38}
+.theme-supper .add-row input:focus{border-color:#B8922A}
+.theme-supper .add-btn{color:#D4A84B;border-color:rgba(184,146,42,.35)}
+.theme-supper .add-btn:hover{background:#2A2010}
+.theme-supper .spin-btn{background:#B8922A;color:#16120D}
+.theme-supper .result-wrap{background:#1E1810;border:1px solid rgba(184,146,42,.2);border-top:2px solid #B8922A}
+.theme-supper .result-eyebrow{color:#5C4F38}
+.theme-supper .ticker{color:#8C7D60}
+.theme-supper .result-name{color:#D4A84B;font-size:34px}
+.theme-supper .result-rule{background:rgba(184,146,42,.25)}
+.theme-supper .name-bar{border-color:rgba(184,146,42,.12)}
+.theme-supper .name-bar-label{color:#5C4F38}
+.theme-supper .name-bar input{color:#E8DEC8;border-color:rgba(184,146,42,.18)}
+.theme-supper .name-bar input::placeholder{color:#5C4F38}
+.theme-supper .name-bar input:focus{border-color:#B8922A}
+.theme-supper .name-bar-toggle{color:#8C7D60}
+
+/* ════ PARLOUR DRINKS theme ════ */
+body.theme-drinks{background:#16120D;color:#E8DEC8}
+.theme-drinks .header{background:#16120D;border-color:rgba(196,98,45,.2)}
+.theme-drinks .logo{color:#C4622D}
+.theme-drinks .tagline{color:#8C7D60}
+.theme-drinks .ornament-line{background:rgba(196,98,45,.3)}
+.theme-drinks .ornament-diamond{background:#C4622D}
+.theme-drinks .tabs{background:#16120D;border-color:rgba(196,98,45,.15)}
+.theme-drinks .tab{color:#5C4F38}
+.theme-drinks .tab:hover{color:#8C7D60}
+.theme-drinks .tab.active{color:#C4622D}
+.theme-drinks .tab.active::after{background:#C4622D}
+.theme-drinks .slabel{color:#5C4F38}
+.theme-drinks .q-btn{background:transparent;border-color:rgba(196,98,45,.25);color:#C9BC9F}
+.theme-drinks .q-btn:hover{background:#1E1810}
+.theme-drinks .i-chip{background:#1E1810;border-left:2px solid #2A1508}
+.theme-drinks .i-chip:hover{border-left-color:#C4622D}
+.theme-drinks .i-chip-name{color:#E8DEC8}
+.theme-drinks .i-chip-remove{color:#5C4F38}
+.theme-drinks .empty-msg{color:#5C4F38}
+.theme-drinks .add-row input{background:#1E1810;color:#E8DEC8;border-color:rgba(196,98,45,.2)}
+.theme-drinks .add-row input::placeholder{color:#5C4F38}
+.theme-drinks .add-row input:focus{border-color:#C4622D}
+.theme-drinks .add-btn{color:#C4622D;border-color:rgba(196,98,45,.35)}
+.theme-drinks .add-btn:hover{background:#2A1508}
+.theme-drinks .spin-btn{background:#C4622D;color:#fff}
+.theme-drinks .result-wrap{background:#1E1810;border:1px solid rgba(196,98,45,.2);border-top:2px solid #C4622D}
+.theme-drinks .result-eyebrow{color:#5C4F38}
+.theme-drinks .ticker{color:#8C7D60}
+.theme-drinks .result-name{color:#C4622D;font-size:34px}
+.theme-drinks .result-rule{background:rgba(196,98,45,.25)}
+.theme-drinks .name-bar{border-color:rgba(196,98,45,.12)}
+.theme-drinks .name-bar-label{color:#5C4F38}
+.theme-drinks .name-bar input{color:#E8DEC8;border-color:rgba(196,98,45,.18)}
+.theme-drinks .name-bar input::placeholder{color:#5C4F38}
+.theme-drinks .name-bar input:focus{border-color:#C4622D}
+.theme-drinks .name-bar-toggle{color:#8C7D60}
+
+/* ════ COFFEE theme ════ */
+body.theme-coffee{background:#F7F4EF;color:#2C2218}
+.theme-coffee .header{background:#F7F4EF;border-color:rgba(0,0,0,.08)}
+.theme-coffee .logo{color:#2C2218;font-size:46px;letter-spacing:4px}
+.theme-coffee .tagline{color:#9E9385}
+.theme-coffee .ornament-line{background:rgba(0,0,0,.1)}
+.theme-coffee .ornament-diamond{background:#9E9385}
+.theme-coffee .tabs{background:#F7F4EF;border-color:rgba(0,0,0,.08)}
+.theme-coffee .tab{color:#C0B8B0}
+.theme-coffee .tab:hover{color:#6B5F54}
+.theme-coffee .tab.active{color:#2C2218}
+.theme-coffee .tab.active::after{background:#2C2218}
+.theme-coffee .slabel{color:#B8AFA4}
+.theme-coffee .q-btn{background:#fff;border-color:rgba(0,0,0,.12);color:#6B5F54;border-radius:2px;font-family:'DM Sans',sans-serif}
+.theme-coffee .q-btn:hover{background:#EDE9E2}
+.theme-coffee .i-chip{border-bottom:1px solid rgba(0,0,0,.07)}
+.theme-coffee .i-chip-name{color:#2C2218;font-weight:300}
+.theme-coffee .i-chip-remove{color:#C0B8B0}
+.theme-coffee .empty-msg{color:#C0B8B0}
+.theme-coffee .add-row input{background:transparent;color:#2C2218;border-color:rgba(0,0,0,.15)}
+.theme-coffee .add-row input::placeholder{color:#C0B8B0}
+.theme-coffee .add-row input:focus{border-color:#2C2218}
+.theme-coffee .add-btn{color:#2C2218;border-color:rgba(0,0,0,.2)}
+.theme-coffee .add-btn:hover{background:#EDE9E2}
+.theme-coffee .spin-btn{background:#2C2218;color:#F7F4EF;border-radius:2px;font-size:16px}
+.theme-coffee .result-wrap{background:#fff;border:1px solid rgba(0,0,0,.08);border-top:2px solid #2C2218}
+.theme-coffee .result-eyebrow{color:#B8AFA4}
+.theme-coffee .ticker{color:#B8AFA4}
+.theme-coffee .result-name{color:#2C2218;font-size:30px}
+.theme-coffee .result-rule{background:rgba(0,0,0,.1)}
+.theme-coffee .name-bar{border-color:rgba(0,0,0,.07)}
+.theme-coffee .name-bar-label{color:#B8AFA4}
+.theme-coffee .name-bar input{color:#2C2218;border-color:rgba(0,0,0,.12)}
+.theme-coffee .name-bar input::placeholder{color:#C0B8B0}
+.theme-coffee .name-bar input:focus{border-color:#2C2218}
+.theme-coffee .name-bar-toggle{color:#9E9385}
+.theme-coffee .fab{background:#fff;border-color:rgba(0,0,0,.15);color:#2C2218}
+.theme-coffee .fab:hover{background:#EDE9E2}
+.theme-coffee .fab.active{background:#2C2218;color:#F7F4EF;border-color:#2C2218}
+
+/* ════ SOLEIL theme ════ */
+body.theme-activities{background:#FDF6EE;color:#4A2E18}
+.theme-activities .header{background:#FDF6EE;border-color:rgba(180,120,80,.12)}
+.theme-activities .logo{color:#C07840;font-family:'Playfair Display',serif;font-size:50px;letter-spacing:3px}
+.theme-activities .tagline{color:#B8957A}
+.theme-activities .ornament-line{background:rgba(180,120,80,.2)}
+.theme-activities .ornament-diamond{background:#D4956A}
+.theme-activities .tabs{background:#FDF6EE;border-color:rgba(180,120,80,.12)}
+.theme-activities .tab{color:#CBA98C}
+.theme-activities .tab:hover{color:#8B5E3C}
+.theme-activities .tab.active{color:#C07840}
+.theme-activities .tab.active::after{background:#C07840}
+.theme-activities .slabel{color:#CBA98C}
+.theme-activities .q-btn{background:rgba(255,235,210,.5);border-color:rgba(192,120,64,.3);color:#8B5E3C;border-radius:20px;font-family:'DM Sans',sans-serif}
+.theme-activities .q-btn:hover{background:rgba(255,220,180,.7)}
+.theme-activities .i-chip{background:rgba(255,235,210,.4);border:1px solid rgba(192,120,64,.18);border-radius:8px}
+.theme-activities .i-chip-name{color:#6B4226}
+.theme-activities .i-chip-remove{color:#CBA98C}
+.theme-activities .empty-msg{color:#CBA98C}
+.theme-activities .add-row input{background:#fff;color:#4A2E18;border-color:rgba(192,120,64,.25);border-radius:20px}
+.theme-activities .add-row input::placeholder{color:#CBA98C}
+.theme-activities .add-row input:focus{border-color:#C07840}
+.theme-activities .add-btn{color:#C07840;border-color:rgba(192,120,64,.35);border-radius:20px}
+.theme-activities .add-btn:hover{background:rgba(255,235,210,.6)}
+.theme-activities .spin-btn{background:#C07840;color:#fff;border-radius:20px;font-size:17px}
+.theme-activities .result-wrap{background:rgba(255,235,210,.5);border:1px solid rgba(192,120,64,.25);border-radius:14px;border-top:2px solid #C07840}
+.theme-activities .result-eyebrow{color:#CBA98C}
+.theme-activities .ticker{color:#CBA98C}
+.theme-activities .result-name{color:#C07840;font-size:30px}
+.theme-activities .result-rule{background:rgba(192,120,64,.2)}
+.theme-activities .name-bar{border-color:rgba(192,120,64,.1)}
+.theme-activities .name-bar-label{color:#CBA98C}
+.theme-activities .name-bar input{color:#4A2E18;border-color:rgba(192,120,64,.2)}
+.theme-activities .name-bar input::placeholder{color:#CBA98C}
+.theme-activities .name-bar input:focus{border-color:#C07840}
+.theme-activities .name-bar-toggle{color:#B8957A}
+.theme-activities .floral-deco{display:flex}
+.theme-activities .fab{background:#FDF6EE;border-color:rgba(192,120,64,.35);color:#C07840}
+.theme-activities .fab:hover{background:rgba(255,235,210,.8)}
+.theme-activities .fab.active{background:#C07840;color:#fff;border-color:#C07840}
+
+/* ════ BRUNCH theme ════ */
+body.theme-brunch{background:#FFFBEC;color:#3A2E00}
+.theme-brunch .header{background:#FFFBEC;border-color:rgba(201,168,0,.18)}
+.theme-brunch .logo{color:#A87800;font-family:'Cormorant Garamond',serif;font-size:52px;letter-spacing:6px}
+.theme-brunch .tagline{color:#A8893A}
+.theme-brunch .ornament-line{background:rgba(201,168,0,.25)}
+.theme-brunch .ornament-diamond{background:#C9A800}
+.theme-brunch .tabs{background:#FFFBEC;border-color:rgba(201,168,0,.15)}
+.theme-brunch .tab{color:#C4AB5A}
+.theme-brunch .tab:hover{color:#7A6200}
+.theme-brunch .tab.active{color:#A87800}
+.theme-brunch .tab.active::after{background:#C9A800}
+.theme-brunch .slabel{color:#A8893A}
+.theme-brunch .q-btn{background:rgba(255,245,180,.5);border-color:rgba(201,168,0,.3);color:#7A6200;border-radius:20px;font-family:'DM Sans',sans-serif;font-weight:300}
+.theme-brunch .q-btn:hover{background:rgba(255,240,140,.7)}
+.theme-brunch .i-chip{background:#FFF8D6;border:1px solid rgba(201,168,0,.22);border-radius:8px}
+.theme-brunch .i-chip:hover{border-color:rgba(201,168,0,.5)}
+.theme-brunch .i-chip-name{color:#3A2E00}
+.theme-brunch .i-chip-remove{color:#C4AB5A}
+.theme-brunch .empty-msg{color:#C4AB5A}
+.theme-brunch .add-row input{background:#FFF8D6;color:#3A2E00;border-color:rgba(201,168,0,.25);border-radius:20px}
+.theme-brunch .add-row input::placeholder{color:#C4AB5A}
+.theme-brunch .add-row input:focus{border-color:#C9A800}
+.theme-brunch .add-btn{color:#A87800;border-color:rgba(201,168,0,.35);border-radius:20px}
+.theme-brunch .add-btn:hover{background:rgba(255,240,140,.4)}
+.theme-brunch .spin-btn{background:#C9A800;color:#fff;border-radius:20px;font-size:17px}
+.theme-brunch .result-wrap{background:#FFF8D6;border:1px solid rgba(201,168,0,.25);border-top:2px solid #C9A800}
+.theme-brunch .result-eyebrow{color:#A8893A}
+.theme-brunch .ticker{color:#C4AB5A}
+.theme-brunch .result-name{color:#A87800;font-size:32px}
+.theme-brunch .result-rule{background:rgba(201,168,0,.25)}
+.theme-brunch .name-bar{border-color:rgba(201,168,0,.12)}
+.theme-brunch .name-bar-label{color:#A8893A}
+.theme-brunch .name-bar input{color:#3A2E00;border-color:rgba(201,168,0,.2)}
+.theme-brunch .name-bar input::placeholder{color:#C4AB5A}
+.theme-brunch .name-bar input:focus{border-color:#C9A800}
+.theme-brunch .name-bar-toggle{color:#A8893A}
+.theme-brunch .fab{background:#FFFBEC;border-color:rgba(201,168,0,.4);color:#A87800}
+.theme-brunch .fab:hover{background:#FFF8D6}
+.theme-brunch .fab.active{background:#C9A800;color:#fff;border-color:#C9A800}
+</style>
+</head>
+<body class="theme-food">
+<div id="wrap">
+
+  <div class="header">
+    <div class="logo">The Draw</div>
+    <div class="tagline" id="tagline">because someone has to decide</div>
+    <div class="ornament">
+      <div class="ornament-line"></div>
+      <div class="ornament-diamond"></div>
+      <div class="ornament-line"></div>
+    </div>
+  </div>
+
+  <div id="sync-status" class="sync-status"></div>
+
+  <div class="name-bar" id="name-bar">
+    <span class="name-bar-label">you are</span>
+    <input id="name-input" type="text" placeholder="enter your name..." maxlength="24" oninput="saveName(this.value)"/>
+    <button class="name-bar-toggle" id="aby-toggle" onclick="toggleAddedBy()">show credits</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-cat="food" onclick="switchTab('food')"><span class="tab-icon">🍜</span>whim</button>
+    <button class="tab" data-cat="supper" onclick="switchTab('supper')"><span class="tab-icon">🕯️</span>the table</button>
+    <button class="tab" data-cat="drinks" onclick="switchTab('drinks')"><span class="tab-icon">🥃</span>parlour</button>
+    <button class="tab" data-cat="coffee" onclick="switchTab('coffee')"><span class="tab-icon">☕</span>coffee</button>
+    <button class="tab" data-cat="activities" onclick="switchTab('activities')"><span class="tab-icon">🌸</span>soleil</button>
+    <button class="tab" data-cat="brunch" onclick="switchTab('brunch')"><span class="tab-icon">🥂</span>brunch</button>
+  </div>
+
+  <!-- ── WHIM ── -->
+  <div class="panel food active" id="panel-food">
+    <div class="slabel">quick bites</div>
+    <div class="quick-row">
+      <button class="q-btn" onclick="quickAdd('food','Chick-fil-A')">Chick-fil-A</button>
+      <button class="q-btn" onclick="quickAdd('food','In-N-Out')">In-N-Out</button>
+      <button class="q-btn" onclick="quickAdd('food','Triumphs')">Triumphs</button>
+      <button class="q-btn" onclick="quickAdd('food','Sweetgreen')">Sweetgreen</button>
+      <button class="q-btn" onclick="quickAdd('food','Italia Express Pizza')">Italia Express</button>
+      <button class="q-btn" onclick="quickAdd('food',&quot;Hunky's Hamburgers&quot;)">Hunky's</button>
+    </div>
+    <div class="slabel">your list</div>
+    <div class="item-list" id="list-food"></div>
+    <div class="add-row">
+      <input id="inp-food" type="text" placeholder="add a spot..."/>
+      <button class="add-btn" onclick="openModal('food')">Add</button>
+    </div>
+    <button class="spin-btn" id="spin-food" onclick="spin('food')" disabled>make the draw</button>
+    <div class="result-wrap" id="result-food">
+      <div class="result-eyebrow">on a whim, you're going to</div>
+      <div class="ticker" id="ticker-food"></div>
+      <div class="result-name" id="name-food"></div>
+      <div class="result-rule"></div>
+      <div class="result-details" id="details-food"></div>
+    </div>
+  </div>
+
+  <!-- ── THE TABLE ── -->
+  <div class="panel supper" id="panel-supper">
+    <div class="slabel">establishments</div>
+    <div class="quick-row">
+      <button class="q-btn" onclick="quickAdd('supper','Nobu')">Nobu</button>
+      <button class="q-btn" onclick="quickAdd('supper','STK Steakhouse')">STK Steakhouse</button>
+      <button class="q-btn" onclick="quickAdd('supper',&quot;Truluck's&quot;)">Truluck's</button>
+      <button class="q-btn" onclick="quickAdd('supper','The Capital Grille')">The Capital Grille</button>
+      <button class="q-btn" onclick="quickAdd('supper','Ocean Prime')">Ocean Prime</button>
+    </div>
+    <div class="slabel">your dining room</div>
+    <div class="item-list" id="list-supper"></div>
+    <div class="add-row">
+      <input id="inp-supper" type="text" placeholder="add a dining room..."/>
+      <button class="add-btn" onclick="openModal('supper')">Add</button>
+    </div>
+    <button class="spin-btn" id="spin-supper" onclick="spin('supper')" disabled>make the draw</button>
+    <div class="result-wrap" id="result-supper">
+      <div class="result-eyebrow">this evening, you dine at</div>
+      <div class="ticker" id="ticker-supper"></div>
+      <div class="result-name" id="name-supper"></div>
+      <div class="result-rule"></div>
+      <div class="result-details" id="details-supper"></div>
+    </div>
+  </div>
+
+  <!-- ── PARLOUR ── -->
+  <div class="panel drinks" id="panel-drinks">
+    <div class="slabel">the usual suspects</div>
+    <div class="quick-row">
+      <button class="q-btn" onclick="quickAdd('drinks','Rooftop Bar')">Rooftop Bar</button>
+      <button class="q-btn" onclick="quickAdd('drinks','Wine Bar')">Wine Bar</button>
+      <button class="q-btn" onclick="quickAdd('drinks','Cocktail Lounge')">Cocktail Lounge</button>
+      <button class="q-btn" onclick="quickAdd('drinks','Speakeasy')">Speakeasy</button>
+      <button class="q-btn" onclick="quickAdd('drinks','Dive Bar')">Dive Bar</button>
+    </div>
+    <div class="slabel">your haunts</div>
+    <div class="item-list" id="list-drinks"></div>
+    <div class="add-row">
+      <input id="inp-drinks" type="text" placeholder="add a watering hole..."/>
+      <button class="add-btn" onclick="openModal('drinks')">Add</button>
+    </div>
+    <button class="spin-btn" id="spin-drinks" onclick="spin('drinks')" disabled>make the draw</button>
+    <div class="result-wrap" id="result-drinks">
+      <div class="result-eyebrow">the draw suggests</div>
+      <div class="ticker" id="ticker-drinks"></div>
+      <div class="result-name" id="name-drinks"></div>
+      <div class="result-rule"></div>
+      <div class="result-details" id="details-drinks"></div>
+    </div>
+  </div>
+
+  <!-- ── COFFEE ── -->
+  <div class="panel coffee" id="panel-coffee">
+    <div class="slabel">nearby</div>
+    <div class="quick-row">
+      <button class="q-btn" onclick="quickAdd('coffee','Starbucks')">Starbucks</button>
+      <button class="q-btn" onclick="quickAdd('coffee','Dutch Bros')">Dutch Bros</button>
+      <button class="q-btn" onclick="quickAdd('coffee','Local Café')">Local Café</button>
+      <button class="q-btn" onclick="quickAdd('coffee','Dunkin')">Dunkin</button>
+      <button class="q-btn" onclick="quickAdd('coffee','Home brew')">Home brew</button>
+    </div>
+    <div class="slabel">your list</div>
+    <div class="item-list" id="list-coffee"></div>
+    <div class="add-row">
+      <input id="inp-coffee" type="text" placeholder="add a café..."/>
+      <button class="add-btn" onclick="openModal('coffee')">Add</button>
+    </div>
+    <button class="spin-btn" id="spin-coffee" onclick="spin('coffee')" disabled>make the draw</button>
+    <div class="result-wrap" id="result-coffee">
+      <div class="result-eyebrow">your morning awaits at</div>
+      <div class="ticker" id="ticker-coffee"></div>
+      <div class="result-name" id="name-coffee"></div>
+      <div class="result-rule"></div>
+      <div class="result-details" id="details-coffee"></div>
+    </div>
+  </div>
+
+  <!-- ── SOLEIL ── -->
+  <div class="panel activities" id="panel-activities">
+    <div class="floral-deco">🌸 🌼 🌿 🌼 🌸</div>
+    <div class="slabel">ideas</div>
+    <div class="quick-row">
+      <button class="q-btn" onclick="quickAdd('activities','Farmers Market')">Farmers Market</button>
+      <button class="q-btn" onclick="quickAdd('activities','Picnic in the Park')">Picnic in the Park</button>
+      <button class="q-btn" onclick="quickAdd('activities','Gallery Visit')">Gallery Visit</button>
+      <button class="q-btn" onclick="quickAdd('activities','Shopping')">Shopping</button>
+      <button class="q-btn" onclick="quickAdd('activities','Live Music')">Live Music</button>
+      <button class="q-btn" onclick="quickAdd('activities','Cinema')">Cinema</button>
+    </div>
+    <div class="slabel">your plans</div>
+    <div class="item-list" id="list-activities"></div>
+    <div class="add-row">
+      <input id="inp-activities" type="text" placeholder="add a plan..."/>
+      <button class="add-btn" onclick="openModal('activities')">Add</button>
+    </div>
+    <button class="spin-btn" id="spin-activities" onclick="spin('activities')" disabled>make the draw</button>
+    <div class="result-wrap" id="result-activities">
+      <div class="result-eyebrow">the day calls for</div>
+      <div class="ticker" id="ticker-activities"></div>
+      <div class="result-name" id="name-activities"></div>
+      <div class="result-rule"></div>
+      <div class="result-details" id="details-activities"></div>
+    </div>
+  </div>
+
+</div>
+
+  <!-- ── BRUNCH ── -->
+  <div class="panel brunch" id="panel-brunch">
+    <div class="slabel">weekend spots</div>
+    <div class="quick-row">
+      <button class="q-btn" onclick="quickAdd('brunch','Bread Winners')">Bread Winners</button>
+      <button class="q-btn" onclick="quickAdd('brunch','Whiskey Cake')">Whiskey Cake</button>
+      <button class="q-btn" onclick="quickAdd('brunch','Maple & Motor')">Maple & Motor</button>
+      <button class="q-btn" onclick="quickAdd('brunch','Snooze AM Eatery')">Snooze AM</button>
+      <button class="q-btn" onclick="quickAdd('brunch','The Henry')">The Henry</button>
+    </div>
+    <div class="slabel">your list</div>
+    <div class="item-list" id="list-brunch"></div>
+    <div class="add-row">
+      <input id="inp-brunch" type="text" placeholder="add a brunch spot..."/>
+      <button class="add-btn" onclick="openModal('brunch')">Add</button>
+    </div>
+    <button class="spin-btn" id="spin-brunch" onclick="spin('brunch')" disabled>make the draw</button>
+    <div class="result-wrap" id="result-brunch">
+      <div class="result-eyebrow">sunday calls for</div>
+      <div class="ticker" id="ticker-brunch"></div>
+      <div class="result-name" id="name-brunch"></div>
+      <div class="result-rule"></div>
+      <div class="result-details" id="details-brunch"></div>
+    </div>
+  </div>
+
+<!-- ── FLOATING ALL PLACES BUTTON ── -->
+<button class="fab" id="fab" onclick="toggleDrawer()">✦ all places</button>
+
+<!-- ── DETAIL SHEET ── -->
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-sheet" id="detail-sheet">
+    <div class="detail-sheet-top">
+      <div>
+        <div class="detail-cat-label" id="detail-cat-label"></div>
+        <div class="detail-name" id="detail-name"></div>
+      </div>
+      <button class="detail-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-rule"></div>
+    <div class="detail-rows" id="detail-rows"></div>
+    <div class="detail-actions">
+      <button class="detail-delete-btn" id="detail-delete-btn">Remove</button>
+      <button class="detail-edit-btn" id="detail-edit-btn">Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ENTRY MODAL ── -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-heading" id="modal-heading">adding to your list</div>
+    <div class="modal-title" id="modal-place-name"></div>
+    <div class="modal-subtitle" id="modal-subtitle">fill in what you know — everything is optional</div>
+    <div class="field">
+      <label>Location / Address</label>
+      <input id="modal-location" type="text" placeholder="e.g. Deep Ellum, Dallas · 2300 Main St"/>
+    </div>
+    <div class="field">
+      <label>Instagram</label>
+      <input id="modal-ig" type="text" placeholder="@handle"/>
+    </div>
+    <div class="field">
+      <label>Website</label>
+      <input id="modal-website" type="text" placeholder="https://..."/>
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="modal-notes" placeholder="vibe, must-orders, reservations, parking, hours..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-skip" id="modal-skip" onclick="saveModal(true)">Skip</button>
+      <button class="modal-save" onclick="saveModal(false)">Save & Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ALL PLACES DRAWER ── -->
+<div class="drawer" id="drawer">
+  <div class="drawer-backdrop" onclick="closeDrawer()"></div>
+  <div class="drawer-panel">
+    <div class="drawer-header">
+      <div>
+        <div class="drawer-title">All Places</div>
+        <div class="drawer-sub">your curated city guide</div>
+      </div>
+      <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    </div>
+    <div class="drawer-filters">
+      <button class="filter-btn active" data-filter="all" onclick="filterDrawer('all')">All</button>
+      <button class="filter-btn" data-filter="food" onclick="filterDrawer('food')">🍜 Whim</button>
+      <button class="filter-btn" data-filter="supper" onclick="filterDrawer('supper')">🕯️ The Table</button>
+      <button class="filter-btn" data-filter="drinks" onclick="filterDrawer('drinks')">🥃 Parlour</button>
+      <button class="filter-btn" data-filter="coffee" onclick="filterDrawer('coffee')">☕ Coffee</button>
+      <button class="filter-btn" data-filter="activities" onclick="filterDrawer('activities')">🌸 Soleil</button>
+      <button class="filter-btn" data-filter="brunch" onclick="filterDrawer('brunch')">🥂 Brunch</button>
+    </div>
+    <div class="drawer-list" id="drawer-list"></div>
+  </div>
+</div>
+
+<script>
+const CATS = ['food','supper','drinks','coffee','activities','brunch'];
+const THEMES = {food:'theme-food',supper:'theme-supper',drinks:'theme-drinks',coffee:'theme-coffee',activities:'theme-activities',brunch:'theme-brunch'};
+const TAGLINES = {
+  food:'because someone has to decide',
+  supper:'the evening awaits',
+  drinks:'the night is still young',
+  coffee:'start somewhere',
+  activities:"the day won't plan itself",
+  brunch:'the only meal worth dressing for'
+};
+const CAT_LABELS = {food:'Whim',supper:'The Table',drinks:'Parlour',coffee:'Coffee',activities:'Soleil',brunch:'Brunch'};
+
+/* ── SHARED SYNC CONFIG ──
+   Replace BIN_ID and API_KEY with your own from jsonbin.io (free).
+   1. Go to jsonbin.io → sign up free
+   2. Create a new bin with: {"food":[],"supper":[],"drinks":[],"coffee":[],"activities":[],"brunch":[]}
+   3. Copy the Bin ID and your API key below
+   Share the HTML file with friends — everyone reads/writes the same bin. */
+const BIN_ID  = 'PASTE_YOUR_BIN_ID_HERE';
+const API_KEY = 'PASTE_YOUR_API_KEY_HERE';
+const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+const EMPTY_DATA = {food:[],supper:[],drinks:[],coffee:[],activities:[],brunch:[]};
+let data = JSON.parse(JSON.stringify(EMPTY_DATA));
+let drawerFilter = 'all';
+let modalState = {cat:null, name:'', editIndex:null};
+let detailState = {cat:null, idx:null};
+let syncing = false;
+let myName = localStorage.getItem('thedraw-myname') || '';
+let showAddedBy = false;
+
+/* ── SYNC STATUS ── */
+function setStatus(msg, type){
+  const el = document.getElementById('sync-status');
+  el.textContent = msg;
+  el.className = 'sync-status '+type;
+  if(type==='ok') setTimeout(()=>{el.textContent='';el.className='sync-status';},2500);
+}
+
+/* ── SEEDED DATA ── */
+const SEEDED = {"food":[{"name":"GAPCO pizza","location":"1923 Greenville Ave, Dallas, TX 75206","ig":"","website":"https://www.gapc.co/menu","notes":"Open until 3 am","addedBy":"anonymous"},{"name":"Mister01 pizza","location":"3838 Oak Lawn Ave suite p175, Dallas, TX 75219","ig":"","website":"","notes":"4.9 rating. \nCloses @ 11:00 pm","addedBy":"anonymous"},{"name":"Louie's pizza + drinks","location":"1839 N Henderson Ave, Dallas, TX 75206","ig":"","website":"","notes":"Old-school hangout serving up beer, cocktails & thin-crust pizza in a casual, no-nonsense setting.","addedBy":"anonymous"},{"name":"Two Hands Restaurant","location":"2681 Howell St. BU 1, Dallas, TX 75204","ig":"","website":"https://www.twohandshospitality.com/location/two-hands-dallas/","notes":"Street parking/ they validate for valet and the Quad parking garage underneath the restaurant for up to two hours.","addedBy":"anonymous"},{"name":"Cafe Madrid","location":"4501 Travis St, Dallas, TX 75205","ig":"https://www.instagram.com/cafemadrid_dallas/?hl=en","website":"http://cafemadrid-dallas.com/menu/tapas/","notes":"Spanish small bites supported by an extensive array of wines & sherries, plus live flamenco.","addedBy":"anonymous"}],"supper":[{"name":"Pane Nostro","location":"508 W Seventh St, Dallas, TX 75208","ig":"@panenostrotx","website":"","notes":"Family-owned house turned Italian restaurant @ Bishop arts.\nHandmade pastas and classic Italian dishes.\nWeekly specials:\n- 1/2 off wine every Tuesday\n- 1/2 off house pastas every Wednesday","addedBy":"anonymous"},{"name":"Atelie By the Experience","location":"367 W Jefferson Blvd, Dallas, TX 75208","ig":"https://www.instagram.com/AtelieByTheExperience/?hl=en","website":"","notes":"Michelin trained chef wyl lima\nHas a rotating art collection. \nOffer seasonal 7-10 course tasting menus with optional wine pairings.\nGood date spot.","addedBy":"anonymous"},{"name":"Urbano","location":"1412 Fitzhugh Avenue","ig":"https://www.instagram.com/urbanocafe/?hl=en","website":"https://www.urbanodallas.com/","notes":"Italian cuisine.\nNext door cocktail bar - Sylvestro","addedBy":"anonymous"},{"name":"Sister","location":"2808 Greenville Ave, Dallas, Texas 75205","ig":"https://www.instagram.com/sister.dallas/","website":"","notes":"Mediterranean & Italian-inspired cuisine in Dallas.","addedBy":"anonymous"},{"name":"St. Martin's Wine Bistro","location":"4223 Bryan St, Dallas, TX 75204","ig":"","website":"","notes":"","addedBy":"anonymous"},{"name":"Bar Sardine","location":"6805 Snider Plaza, Dallas, TX 75205","ig":"https://www.instagram.com/p/DQp1-MKEfiB/","website":"https://www.thebarsardine.com/","notes":"A great spot for a romantic evening in the city, or definitely a spot to get dressed up and enjoy a nice dinner","addedBy":"anonymous"},{"name":"Cafe Madrid","location":"4501 Travis St, Dallas, TX 75205","ig":"https://www.instagram.com/cafemadrid_dallas/?hl=en","website":"http://www.cafemadrid-dallas.com/","notes":"Spanish small bites supported by an extensive array of wines & sherries, plus live flamenco.","addedBy":"anonymous"}],"drinks":[{"name":"The Adolphus, Autograph Collection","location":"1321 Commerce St, Dallas, TX 75202","ig":"","website":"","notes":"","addedBy":"anonymous"},{"name":"Cache","location":"2701 McKinney Ave, Dallas, TX 75204","ig":"https://www.instagram.com/cache.tx/","website":"https://www.cachedallas.com/","notes":"New Orleans-inspired cocktail lounge. \nTo order: \n1) For the oyster lover: dressed east coast oyster\n2) Black-eyed hummus \n3) Cheese charcuterie board\n4) Drink to try: Basilique - basil infused gin","addedBy":"anonymous"},{"name":"Bowen House","location":"2614 Boll St, Dallas, Texas","ig":"https://www.instagram.com/bowenhouse/","website":"www.bowenhousetx.com","notes":"Historic 1874 uptown home turned cocktail lounge with a hidden speakeasy. \nGreat stop after work or for an intimate outing. \nVibe can be casual or date-night feel.","addedBy":"anonymous"},{"name":"Babou's","location":"2598 N Harwood St, Dallas, TX 75201","ig":"https://www.instagram.com/BabousDallas/?hl=en","website":"","notes":"@ Hotel Swexan","addedBy":"anonymous"},{"name":"Ritual Lounge","location":"1623 N Hall, St. Dallas Tx","ig":"https://www.instagram.com/ritualdtx/?hl=en","website":"","notes":"Live music Wednesday and Thursday","addedBy":"anonymous"},{"name":"Bar Sardine","location":"6805 Snider Plaza, Dallas, TX 75205","ig":"https://www.instagram.com/p/DQp1-MKEfiB/","website":"https://www.thebarsardine.com/","notes":"A great spot for a romantic evening in the city, or definitely a spot to get dressed up and enjoy a nice dinner","addedBy":"anonymous"}],"coffee":[{"name":"333.matcha","location":"1015 w davis st, dallas 75205","ig":"@333.matcha","website":"instagram.com/333.matcha/?hl=en","notes":"Shop powered by @333spacedallas. Matcha and espresso at commonrags house - a studio Sounds on saturdays from 10-4 Keep an eye on friday night events","addedBy":"anonymous"},{"name":"Slow and steady coffee","location":"1805 S Edgefield Ave, Dallas, TX 75224","ig":"@slowandsteadycoffee","website":"","notes":"","addedBy":"anonymous"},{"name":"Cafe Olivia","location":"2200 Ross Ave suite 100, Dallas, TX 75201","ig":"","website":"","notes":"Inside Dallas Art Tower\nHealthy food options?","addedBy":"anonymous"},{"name":"Wayward coffee @oakcliff","location":"1318 W Davis St, Dallas, TX 75208","ig":"https://www.instagram.com/waywardcoffeeco/?hl=en","website":"","notes":"","addedBy":"anonymous"},{"name":"Fount Board and Table","location":"2414 Routh St, Dallas, TX 75201","ig":"https://www.instagram.com/fountboardandtable/?hl=en","website":"https://www.fountdallas.com/","notes":"Coffee shop with bites and cheese boards (good idea to pickup for a gathering).","addedBy":"anonymous"},{"name":"Khroma coffee","location":"3401 Main St, Dallas, TX 75226","ig":"https://www.instagram.com/khromacoffee/?hl=en","website":"","notes":"Espresso Bar & Digital Muse\nLocated inside JEM Studios\n9AM-6PM\nWednesday-Saturday","addedBy":"anonymous"},{"name":"White rock brewing company","location":"2477 N Beckley Ave, Dallas, TX 75208","ig":"https://www.instagram.com/whiterockbrewingcompany/?hl=en","website":"","notes":"Their espresso martini is crafted in partnership with Little Joy, and they have coffee-brewed collab beers with Noble Coffee on tap.","addedBy":"anonymous"}],"activities":[],"brunch":[{"name":"Two Hands Restaurant","location":"2681 Howell St. BU 1, Dallas, TX 75204","ig":"https://www.instagram.com/twohandshospitality/","website":"https://www.twohandshospitality.com/location/two-hands-dallas/","notes":"Hours:\nSunday - Tuesday: 8 a.m. - 4 p.m.\nWednesday - Thursday: 8 a.m. - 9 p.m.\nFriday - Saturday: 8 a.m. - 10 p.m.\n\nParking:\nStreet parking / they validate for valet and the Quad parking garage underneath the restaurant for up to two hours.","addedBy":"anonymous"}]};
+
+/* ── LOAD FROM JSONBIN ── */
+async function load(){
+  if(BIN_ID==='PASTE_YOUR_BIN_ID_HERE'){
+    const stored = localStorage.getItem('thedraw-local');
+    if(stored){
+      try{ const parsed = JSON.parse(stored);
+        // Use stored if it has any entries
+        const hasEntries = Object.values(parsed).some(arr=>arr.length>0);
+        data = hasEntries ? {...EMPTY_DATA,...parsed} : JSON.parse(JSON.stringify(SEEDED));
+      }catch(e){ data = JSON.parse(JSON.stringify(SEEDED)); }
+    } else {
+      data = JSON.parse(JSON.stringify(SEEDED));
+      localStorage.setItem('thedraw-local', JSON.stringify(data));
+    }
+    CATS.forEach(render); return;
+  }
+  setStatus('syncing…','loading');
+  try{
+    const r = await fetch(BIN_URL+'/latest',{headers:{'X-Master-Key':API_KEY,'X-Bin-Meta':'false'}});
+    if(!r.ok) throw new Error('fetch failed');
+    const json = await r.json();
+    data = {...EMPTY_DATA,...json};
+    setStatus('synced','ok');
+  }catch(e){
+    data = JSON.parse(localStorage.getItem('thedraw-local')||JSON.stringify(EMPTY_DATA));
+    setStatus('offline — local only','warn');
+  }
+  CATS.forEach(render);
+}
+
+/* ── SAVE TO JSONBIN ── */
+async function save(){
+  localStorage.setItem('thedraw-local', JSON.stringify(data));
+  if(BIN_ID==='PASTE_YOUR_BIN_ID_HERE') return;
+  if(syncing) return;
+  syncing = true;
+  setStatus('saving…','loading');
+  try{
+    const r = await fetch(BIN_URL,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':API_KEY,'X-Bin-Versioning':'false'},body:JSON.stringify(data)});
+    if(!r.ok) throw new Error('save failed');
+    setStatus('saved','ok');
+  }catch(e){
+    setStatus('save failed — check connection','warn');
+  }
+  syncing = false;
+}
+
+/* ── POLL FOR UPDATES every 30s ── */
+setInterval(async()=>{
+  if(BIN_ID==='PASTE_YOUR_BIN_ID_HERE'||syncing) return;
+  try{
+    const r = await fetch(BIN_URL+'/latest',{headers:{'X-Master-Key':API_KEY,'X-Bin-Meta':'false'}});
+    if(!r.ok) return;
+    const json = await r.json();
+    data = {...EMPTY_DATA,...json};
+    CATS.forEach(render);
+    if(document.getElementById('drawer').classList.contains('show')) renderDrawer();
+  }catch(e){}
+},30000);
+
+function switchTab(cat){
+  CATS.forEach(c=>{
+    document.getElementById('panel-'+c).classList.toggle('active',c===cat);
+    document.querySelector('.tab[data-cat="'+c+'"]').classList.toggle('active',c===cat);
+  });
+  Object.values(THEMES).forEach(t=>document.body.classList.remove(t));
+  document.body.classList.add(THEMES[cat]);
+  document.getElementById('tagline').textContent = TAGLINES[cat];
+}
+
+function saveName(v){
+  myName = v.trim();
+  localStorage.setItem('thedraw-myname', myName);
+}
+
+function toggleAddedBy(){
+  showAddedBy = !showAddedBy;
+  document.getElementById('aby-toggle').textContent = showAddedBy ? 'hide credits' : 'show credits';
+  CATS.forEach(render);
+}
+
+/* ── RENDER LIST ── */
+function render(cat){
+  const el = document.getElementById('list-'+cat);
+  const items = data[cat];
+  if(!items.length){
+    el.innerHTML='<p class="empty-msg">nothing here yet</p>';
+  } else {
+    el.innerHTML = items.map((p,i)=>{
+      const meta = [p.location, p.ig ? (p.ig.startsWith('@')?p.ig:'@'+p.ig) : ''].filter(Boolean);
+      const byLine = showAddedBy && p.addedBy ? `<span class="i-chip-tag" style="opacity:.35">✦ ${p.addedBy}</span>` : '';
+      return `<div class="i-chip" onclick="openDetail('${cat}',${i})">
+        <div class="i-chip-info">
+          <div class="i-chip-name">${p.name}</div>
+          ${(meta.length||byLine) ? `<div class="i-chip-meta">${meta.map(m=>`<span class="i-chip-tag">${m}</span>`).join('')}${byLine}</div>` : ''}
+          ${p.notes ? `<div class="i-chip-note">${p.notes}</div>` : ''}
+        </div>
+        <div class="i-chip-actions">
+          <button class="i-chip-remove" onclick="event.stopPropagation();removeItem('${cat}',${i})">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('spin-'+cat).disabled = items.length < 2;
+}
+
+/* ── DETAIL SHEET ── */
+function openDetail(cat, idx){
+  const p = data[cat][idx];
+  detailState = {cat, idx};
+  const sheet = document.getElementById('detail-sheet');
+  sheet.className = 'detail-sheet detail-'+cat;
+  document.getElementById('detail-cat-label').textContent = CAT_LABELS[cat];
+  document.getElementById('detail-name').textContent = p.name;
+
+  let rows = '';
+  if(p.location){
+    const mapsUrl = 'https://maps.apple.com/?q='+encodeURIComponent(p.name+' '+p.location);
+    rows += `<div class="detail-row"><div class="detail-icon">📍</div><div class="detail-text"><a href="${mapsUrl}" target="_blank">${p.location}</a></div></div>`;
+  }
+  if(p.ig){
+    const handle = p.ig.startsWith('@') ? p.ig : '@'+p.ig;
+    const igUrl = 'https://instagram.com/'+handle.replace('@','');
+    rows += `<div class="detail-row"><div class="detail-icon">📸</div><div class="detail-text"><a href="${igUrl}" target="_blank">${handle}</a></div></div>`;
+  }
+  if(p.website){
+    const url = p.website.startsWith('http') ? p.website : 'https://'+p.website;
+    const display = url.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'');
+    rows += `<div class="detail-row"><div class="detail-icon">🔗</div><div class="detail-text"><a href="${url}" target="_blank">${display}</a></div></div>`;
+  }
+  if(p.notes){
+    rows += `<div class="detail-row"><div class="detail-icon">✦</div><div class="detail-text">${p.notes}</div></div>`;
+  }
+  if(!rows) rows = '<div class="detail-empty">no details yet — tap Edit to add some</div>';
+  document.getElementById('detail-rows').innerHTML = rows;
+
+  document.getElementById('detail-edit-btn').onclick = ()=>{ closeDetail(); openEditModal(cat, idx); };
+  document.getElementById('detail-delete-btn').onclick = ()=>{ closeDetail(); removeItem(cat, idx); };
+
+  document.getElementById('detail-overlay').classList.add('show');
+}
+
+function closeDetail(){
+  document.getElementById('detail-overlay').classList.remove('show');
+}
+document.getElementById('detail-overlay').addEventListener('click',function(e){
+  if(e.target===this) closeDetail();
+});
+
+/* ── OPEN MODAL (new entry) ── */
+function openModal(cat){
+  const inp = document.getElementById('inp-'+cat);
+  const name = inp.value.trim();
+  if(!name) return;
+  if(data[cat].some(p=>p.name.toLowerCase()===name.toLowerCase())){inp.value='';return;}
+  modalState = {cat, name, editIndex:null};
+  document.getElementById('modal-heading').textContent = 'adding to your list';
+  document.getElementById('modal-place-name').textContent = name;
+  document.getElementById('modal-subtitle').textContent = 'fill in what you know — everything is optional';
+  document.getElementById('modal-location').value = '';
+  document.getElementById('modal-ig').value = '';
+  document.getElementById('modal-website').value = '';
+  document.getElementById('modal-notes').value = '';
+  document.getElementById('modal-skip').style.display = '';
+  const modal = document.querySelector('.modal');
+  modal.className = 'modal modal-'+cat;
+  document.getElementById('modal-overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('modal-location').focus(), 300);
+}
+
+/* ── OPEN MODAL (edit existing) ── */
+function openEditModal(cat, idx){
+  const p = data[cat][idx];
+  modalState = {cat, name:p.name, editIndex:idx};
+  document.getElementById('modal-heading').textContent = 'editing';
+  document.getElementById('modal-place-name').textContent = p.name;
+  document.getElementById('modal-subtitle').textContent = 'update any details below';
+  document.getElementById('modal-location').value = p.location||'';
+  document.getElementById('modal-ig').value = p.ig||'';
+  document.getElementById('modal-website').value = p.website||'';
+  document.getElementById('modal-notes').value = p.notes||'';
+  document.getElementById('modal-skip').style.display = 'none';
+  const modal = document.querySelector('.modal');
+  modal.className = 'modal modal-'+cat;
+  document.getElementById('modal-overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('modal-location').focus(), 300);
+}
+
+/* ── SAVE MODAL ── */
+function saveModal(skip){
+  const {cat, name, editIndex} = modalState;
+  if(!cat) return;
+  const entry = {
+    name,
+    location: skip ? (editIndex!==null ? data[cat][editIndex].location : '') : document.getElementById('modal-location').value.trim(),
+    ig:       skip ? (editIndex!==null ? data[cat][editIndex].ig       : '') : document.getElementById('modal-ig').value.trim(),
+    website:  skip ? (editIndex!==null ? data[cat][editIndex].website  : '') : document.getElementById('modal-website').value.trim(),
+    notes:    skip ? (editIndex!==null ? data[cat][editIndex].notes    : '') : document.getElementById('modal-notes').value.trim(),
+    addedBy:  editIndex!==null ? data[cat][editIndex].addedBy : (myName||'anonymous'),
+  };
+  if(editIndex !== null){
+    data[cat][editIndex] = entry;
+  } else {
+    data[cat].push(entry);
+    document.getElementById('inp-'+cat).value = '';
+  }
+  save(); render(cat);
+  document.getElementById('modal-overlay').classList.remove('show');
+  modalState = {cat:null, name:'', editIndex:null};
+}
+
+document.getElementById('modal-overlay').addEventListener('click',function(e){
+  if(e.target===this) saveModal(true);
+});
+
+/* ── QUICK ADD ── */
+function quickAdd(cat, val){
+  if(!data[cat].some(p=>p.name===val)){
+    data[cat].push({name:val, location:'', ig:'', website:'', notes:'', addedBy: myName||'anonymous'});
+    save(); render(cat);
+  }
+}
+
+/* ── REMOVE ── */
+function removeItem(cat,i){
+  data[cat].splice(i,1); save(); render(cat);
+  document.getElementById('result-'+cat).classList.remove('show');
+}
+
+/* ── ENTER KEY ── */
+CATS.forEach(cat=>{
+  document.getElementById('inp-'+cat).addEventListener('keydown',e=>{
+    if(e.key==='Enter') openModal(cat);
+  });
+});
+
+/* ── SPIN ── */
+function spin(cat){
+  const items = data[cat];
+  if(items.length<2) return;
+  document.getElementById('spin-'+cat).disabled = true;
+  const ticker = document.getElementById('ticker-'+cat);
+  const nameEl = document.getElementById('name-'+cat);
+  const detailsEl = document.getElementById('details-'+cat);
+  const wrap = document.getElementById('result-'+cat);
+  wrap.classList.add('show');
+  nameEl.textContent='';
+  detailsEl.innerHTML='';
+  let count=0, total=26+Math.floor(Math.random()*14), delay=60, pick=0;
+  function step(){
+    pick = Math.floor(Math.random()*items.length);
+    ticker.textContent = items[pick].name;
+    count++;
+    if(count<total){delay=60+(count/total)*360;setTimeout(step,delay);}
+    else{
+      ticker.textContent='';
+      const p = items[pick];
+      nameEl.textContent = p.name;
+      renderDetails(cat, p);
+      document.getElementById('spin-'+cat).disabled=false;
+    }
+  }
+  step();
+}
+
+/* ── RENDER RESULT DETAILS ── */
+function renderDetails(cat, p){
+  const el = document.getElementById('details-'+cat);
+  let html = '';
+  if(p.location){
+    const mapsUrl = 'https://maps.apple.com/?q='+encodeURIComponent(p.name+' '+p.location);
+    html += `<div class="result-detail"><div class="result-detail-icon">📍</div><div class="result-detail-text"><a href="${mapsUrl}" target="_blank">${p.location}</a></div></div>`;
+  }
+  if(p.ig){
+    const handle = p.ig.startsWith('@') ? p.ig : '@'+p.ig;
+    const igUrl = 'https://instagram.com/'+handle.replace('@','');
+    html += `<div class="result-detail"><div class="result-detail-icon">📸</div><div class="result-detail-text"><a href="${igUrl}" target="_blank">${handle}</a></div></div>`;
+  }
+  if(p.website){
+    const url = p.website.startsWith('http') ? p.website : 'https://'+p.website;
+    const display = url.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'');
+    html += `<div class="result-detail"><div class="result-detail-icon">🔗</div><div class="result-detail-text"><a href="${url}" target="_blank">${display}</a></div></div>`;
+  }
+  if(p.notes){
+    html += `<div class="result-detail"><div class="result-detail-icon">✦</div><div class="result-detail-text">${p.notes}</div></div>`;
+  }
+  el.innerHTML = html;
+}
+
+/* ── DRAWER ── */
+function toggleDrawer(){
+  const d=document.getElementById('drawer');
+  if(d.classList.contains('show')) closeDrawer(); else openDrawer();
+}
+function openDrawer(){
+  document.getElementById('drawer').classList.add('show');
+  document.getElementById('fab').classList.add('active');
+  renderDrawer();
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('show');
+  document.getElementById('fab').classList.remove('active');
+}
+function filterDrawer(f){
+  drawerFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===f));
+  renderDrawer();
+}
+function renderDrawer(){
+  const el = document.getElementById('drawer-list');
+  let all = [];
+  CATS.forEach(cat=>data[cat].forEach(p=>all.push({...p,cat})));
+  if(drawerFilter!=='all') all=all.filter(p=>p.cat===drawerFilter);
+  if(!all.length){el.innerHTML='<p class="drawer-empty">no places saved yet</p>';return;}
+  el.innerHTML = all.map(p=>{
+    const q = encodeURIComponent(p.name+(p.location?' '+p.location:' Dallas TX'));
+    const appleUrl = 'https://maps.apple.com/?q='+q;
+    const igHandle = p.ig ? (p.ig.startsWith('@')?p.ig:'@'+p.ig) : '';
+    return `<div class="drawer-place-row">
+      <div class="dp-dot dot-${p.cat}"></div>
+      <div class="dp-info">
+        <div class="dp-name">${p.name}</div>
+        <div class="dp-cat cat-${p.cat}">${CAT_LABELS[p.cat]}</div>
+        ${p.location?`<div class="dp-meta">📍 ${p.location}</div>`:''}
+        ${igHandle?`<div class="dp-meta">📸 ${igHandle}</div>`:''}
+        ${p.website?`<div class="dp-meta">🔗 <a href="${p.website.startsWith('http')?p.website:'https://'+p.website}" target="_blank" style="color:inherit">${p.website.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'')}</a></div>`:''}
+        ${p.notes?`<div class="dp-meta" style="font-style:italic;opacity:.6">✦ ${p.notes}</div>`:''}
+      </div>
+      ${p.location?`<a href="${appleUrl}" target="_blank" class="dp-maps">Maps ↗</a>`:''}
+    </div>`;
+  }).join('');
+}
+
+load();
+if(myName) document.getElementById('name-input').value = myName;
+</script>
+</body>
+</html>
